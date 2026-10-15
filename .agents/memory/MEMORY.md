@@ -1,1 +1,2 @@
 - [Orval fetch typings](orval-dom-iterable.md) — Preserve `dom.iterable` in the API client TypeScript libraries; generated `Headers.entries()` calls depend on it.
+- [n8n order webhook](n8n-order-webhook.md) — Completed-order events were confirmed working with n8n's test webhook while its listener is active.
