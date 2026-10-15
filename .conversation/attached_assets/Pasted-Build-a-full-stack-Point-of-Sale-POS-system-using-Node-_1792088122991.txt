@@ -1,0 +1,39 @@
+Build a full-stack Point of Sale (POS) system using Node.js, Express, and PostgreSQL. Use React for the frontend.
+
+For the frontend, please generate a clean, modern, and highly polished UI using a minimalist aesthetic and a framework like Tailwind CSS. I have minimal creativity when it comes to graphics and will only be using Canva for basic assets like a simple logo later on. Because of this, you must handle all the UI/layout styling, color palettes, and component designs natively without relying on custom external image uploads.
+
+Please implement the following robust PostgreSQL database schema for the backend. Auto-generate the necessary APIs and foreign key relationships to support this:
+
+1. Employees (Users)
+
+Fields: id (UUID), full_name (String), role (Enum: Admin, Barista), pos_pin (4-digit string), is_active (Boolean).
+
+2. Products
+
+Fields: id (UUID), name (String, e.g., Flat White, Single Origin Beans), category (Enum: Beverage, Retail, Food), base_price (Decimal), track_inventory (Boolean).
+
+3. Modifiers
+
+Fields: id (UUID), name (String, e.g., Oat Milk, Extra Espresso Shot), additional_cost (Decimal).
+
+4. Customers
+
+Fields: id (UUID), name (String), phone_number (String, unique), loyalty_points_balance (Integer).
+
+5. Orders
+
+Fields: id (UUID), employee_id (Foreign Key -> Employees), customer_id (Foreign Key -> Customers, nullable), total_amount (Decimal), payment_method (Enum: Cash, Card, E-Wallet), status (Enum: Completed, Refunded), created_at (Timestamp).
+
+6. OrderItems
+
+Fields: id (UUID), order_id (Foreign Key -> Orders), product_id (Foreign Key -> Products), quantity (Integer), unit_price (Decimal), subtotal (Decimal), barista_notes (String).
+
+7. OrderItemModifiers
+
+Fields: id (UUID), order_item_id (Foreign Key -> OrderItems), modifier_id (Foreign Key -> Modifiers).
+
+8. AutomationEvents & Webhooks
+
+Fields: id (UUID), event_type (String), payload (JSONB), sync_status (Enum: Pending, Processed).
+
+Backend Instruction: Write a Node.js utility function that fires an HTTP POST payload directly to an external webhook URL (for integration with tools like n8n or Zapier) the exact moment an order is marked as "Completed". Log the payload in this AutomationEvents table as a backup in case the webhook fails.

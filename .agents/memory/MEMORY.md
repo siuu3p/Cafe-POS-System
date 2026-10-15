@@ -1,0 +1,1 @@
+- [Orval fetch typings](orval-dom-iterable.md) — Preserve `dom.iterable` in the API client TypeScript libraries; generated `Headers.entries()` calls depend on it.

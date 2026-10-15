@@ -3,20 +3,26 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Café point-of-sale API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: employees
+  - name: products
+  - name: modifiers
+  - name: customers
+  - name: orders
+  - name: dashboard
+  - name: automation
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +30,872 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/setup-status:
+    get:
+      operationId: getSetupStatus
+      tags: [auth]
+      summary: Check whether the initial administrator needs to be created
+      responses:
+        "200":
+          description: Setup status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupStatus"
+  /auth/staff:
+    get:
+      operationId: getStaffOptions
+      tags: [auth]
+      summary: List active staff names for the PIN sign-in screen
+      responses:
+        "200":
+          description: Active staff
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffOption"
+  /auth/setup:
+    post:
+      operationId: setupAdministrator
+      tags: [auth]
+      summary: Create the first administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdministratorSetupInput"
+      responses:
+        "201":
+          description: Administrator created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionEmployee"
+        "409":
+          description: Initial setup is already complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/login:
+    post:
+      operationId: loginEmployee
+      tags: [auth]
+      summary: Sign in with an employee PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed-in employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionEmployee"
+        "401":
+          description: Invalid employee or PIN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/me:
+    get:
+      operationId: getCurrentSession
+      tags: [auth]
+      summary: Get the current signed-in employee
+      responses:
+        "200":
+          description: Current employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionEmployee"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/logout:
+    post:
+      operationId: logoutEmployee
+      tags: [auth]
+      summary: Sign out
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List employees (administrator)
+      responses:
+        "200":
+          description: Employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [employees]
+      summary: Create an employee (administrator)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeInput"
+      responses:
+        "201":
+          description: Employee created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+  /employees/{id}:
+    patch:
+      operationId: updateEmployee
+      tags: [employees]
+      summary: Update an employee (administrator)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeUpdate"
+      responses:
+        "200":
+          description: Employee updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List the product catalog
+      parameters:
+        - name: category
+          in: query
+          schema:
+            $ref: "#/components/schemas/ProductCategory"
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product (administrator)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product (administrator)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /modifiers:
+    get:
+      operationId: listModifiers
+      tags: [modifiers]
+      summary: List product modifiers
+      parameters:
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Modifiers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Modifier"
+    post:
+      operationId: createModifier
+      tags: [modifiers]
+      summary: Create a modifier (administrator)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModifierInput"
+      responses:
+        "201":
+          description: Modifier created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Modifier"
+  /modifiers/{id}:
+    patch:
+      operationId: updateModifier
+      tags: [modifiers]
+      summary: Update a modifier (administrator)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModifierUpdate"
+      responses:
+        "200":
+          description: Modifier updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Modifier"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: Search customers by name or phone number
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+  /customers/{id}:
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update customer information or loyalty balance
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List recent orders
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create and complete a sale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Completed order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{id}/refund:
+    post:
+      operationId: refundOrder
+      tags: [orders]
+      summary: Mark a completed order as refunded
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Refunded order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get today's sales summary and recent orders
+      responses:
+        "200":
+          description: Dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /automation/status:
+    get:
+      operationId: getAutomationStatus
+      tags: [automation]
+      summary: Get webhook configuration and delivery counts
+      responses:
+        "200":
+          description: Webhook delivery status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutomationStatus"
+  /automation/events:
+    get:
+      operationId: listAutomationEvents
+      tags: [automation]
+      summary: List recent webhook delivery events
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Automation events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AutomationEvent"
+  /automation/events/{id}/retry:
+    post:
+      operationId: retryAutomationEvent
+      tags: [automation]
+      summary: Retry a pending or failed webhook delivery (administrator)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Retried event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutomationEvent"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    NotFound:
+      description: Record not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+    EmployeeRole:
+      type: string
+      enum: [Admin, Barista]
+    ProductCategory:
+      type: string
+      enum: [Beverage, Retail, Food]
+    PaymentMethod:
+      type: string
+      enum: [Cash, Card, E-Wallet]
+    OrderStatus:
+      type: string
+      enum: [Completed, Refunded]
+    SyncStatus:
+      type: string
+      enum: [Pending, Processed]
+    SetupStatus:
+      type: object
+      properties:
+        needsSetup:
+          type: boolean
+      required: [needsSetup]
+    StaffOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+      required: [id, fullName]
+    SessionEmployee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/EmployeeRole"
+      required: [id, fullName, role]
+    AdministratorSetupInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        posPin:
+          type: string
+          pattern: "^[0-9]{4}$"
+      required: [fullName, posPin]
+    LoginInput:
+      type: object
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        posPin:
+          type: string
+          pattern: "^[0-9]{4}$"
+      required: [employeeId, posPin]
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/EmployeeRole"
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, fullName, role, isActive, createdAt]
+    EmployeeInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        role:
+          $ref: "#/components/schemas/EmployeeRole"
+        posPin:
+          type: string
+          pattern: "^[0-9]{4}$"
+      required: [fullName, role, posPin]
+    EmployeeUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        role:
+          $ref: "#/components/schemas/EmployeeRole"
+        posPin:
+          type: string
+          pattern: "^[0-9]{4}$"
+        isActive:
+          type: boolean
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          $ref: "#/components/schemas/ProductCategory"
+        basePrice:
+          type: number
+        trackInventory:
+          type: boolean
+        isActive:
+          type: boolean
+      required: [id, name, category, basePrice, trackInventory, isActive]
+    ProductInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        category:
+          $ref: "#/components/schemas/ProductCategory"
+        basePrice:
+          type: number
+          minimum: 0
+        trackInventory:
+          type: boolean
+      required: [name, category, basePrice, trackInventory]
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        category:
+          $ref: "#/components/schemas/ProductCategory"
+        basePrice:
+          type: number
+          minimum: 0
+        trackInventory:
+          type: boolean
+        isActive:
+          type: boolean
+    Modifier:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        additionalCost:
+          type: number
+        isActive:
+          type: boolean
+      required: [id, name, additionalCost, isActive]
+    ModifierInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        additionalCost:
+          type: number
+          minimum: 0
+      required: [name, additionalCost]
+    ModifierUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        additionalCost:
+          type: number
+          minimum: 0
+        isActive:
+          type: boolean
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phoneNumber:
+          type: string
+        loyaltyPointsBalance:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, phoneNumber, loyaltyPointsBalance, createdAt]
+    CustomerInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        phoneNumber:
+          type: string
+          minLength: 3
+          maxLength: 40
+      required: [name, phoneNumber]
+    CustomerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        phoneNumber:
+          type: string
+          minLength: 3
+          maxLength: 40
+        loyaltyPointsBalance:
+          type: integer
+          minimum: 0
+    OrderItemInput:
+      type: object
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+        modifierIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        baristaNotes:
+          type: string
+          maxLength: 500
+      required: [productId, quantity, modifierIds]
+    OrderInput:
+      type: object
+      properties:
+        customerId:
+          type: ["string", "null"]
+          format: uuid
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/OrderItemInput"
+      required: [paymentMethod, items]
+    OrderLineModifier:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        additionalCost:
+          type: number
+      required: [id, name, additionalCost]
+    OrderLine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        subtotal:
+          type: number
+        baristaNotes:
+          type: string
+        modifiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderLineModifier"
+      required: [id, productId, productName, quantity, unitPrice, subtotal, baristaNotes, modifiers]
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        employeeName:
+          type: string
+        customerId:
+          type: ["string", "null"]
+          format: uuid
+        customerName:
+          type: ["string", "null"]
+        totalAmount:
+          type: number
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderLine"
+      required: [id, employeeId, employeeName, customerId, customerName, totalAmount, paymentMethod, status, createdAt, items]
+    Dashboard:
+      type: object
+      properties:
+        todaySales:
+          type: number
+        todayOrders:
+          type: integer
+        averageOrder:
+          type: number
+        recentOrders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+      required: [todaySales, todayOrders, averageOrder, recentOrders]
+    AutomationEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+        syncStatus:
+          $ref: "#/components/schemas/SyncStatus"
+        attempts:
+          type: integer
+        lastError:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: ["string", "null"]
+          format: date-time
+      required: [id, eventType, payload, syncStatus, attempts, lastError, createdAt, processedAt]
+    AutomationStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        pendingCount:
+          type: integer
+        processedCount:
+          type: integer
+      required: [configured, pendingCount, processedCount]

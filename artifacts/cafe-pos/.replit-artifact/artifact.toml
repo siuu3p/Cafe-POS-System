@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Café POS"
+description = "A full-stack point-of-sale system for a neighborhood café, with staff PIN sign-in, a fast product and modifier checkout, customer loyalty, order history, and reliable order-completion webhook delivery backed by PostgreSQL."
+version = "1.0.0"
+id = "artifacts/cafe-pos"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18629
+
+[services.development]
+run = "pnpm --filter @workspace/cafe-pos run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cafe-pos", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/cafe-pos/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18629"
+BASE_PATH = "/"

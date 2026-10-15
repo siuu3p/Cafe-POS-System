@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { retryPendingWebhookEvents } from "./lib/webhooks";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,12 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  void retryPendingWebhookEvents().catch((error: unknown) => {
+    logger.error({ err: error }, "Unable to retry pending order webhooks");
+  });
+  setInterval(() => {
+    void retryPendingWebhookEvents().catch((error: unknown) => {
+      logger.error({ err: error }, "Unable to retry pending order webhooks");
+    });
+  }, 30_000).unref();
 });
