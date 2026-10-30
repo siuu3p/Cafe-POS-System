@@ -1,0 +1,22 @@
+# Render Blueprint: one web service serves both the POS web app and the API.
+# The database lives outside Render (for example Neon), because Render's free
+# Postgres expires. Set DATABASE_URL in the Render dashboard after creating it.
+services:
+  - type: web
+    name: cafe-pos
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm run build:deploy
+    startCommand: pnpm start
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ORDER_COMPLETED_WEBHOOK_URL
+        sync: false
