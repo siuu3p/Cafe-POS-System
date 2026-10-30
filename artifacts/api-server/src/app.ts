@@ -2,11 +2,14 @@ import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import path from "path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
 const sessionSecret = process.env["SESSION_SECRET"];
+const frontendPath = path.resolve(__dirname, "../../cafe-pos/dist/public");
+
 
 if (!sessionSecret) {
   throw new Error("SESSION_SECRET must be set to sign POS sessions.");
@@ -37,5 +40,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+app.use(express.static(frontendPath));
+
+app.get("/{*splat}", (_req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
 
 export default app;
