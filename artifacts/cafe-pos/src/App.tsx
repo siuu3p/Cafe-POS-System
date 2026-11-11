@@ -113,9 +113,14 @@ function AuthScreen({ needsSetup }: { needsSetup: boolean }) {
           {staffQuery.data?.length === 0 && !staffQuery.isLoading && <Notice tone="info">No active team members are available. Ask an administrator to check the team.</Notice>}
         </form>}
         <p className="mt-8 text-xs text-muted-foreground">Secure staff access · Café POS</p>
+        <Credit className="mt-2" />
       </section>
     </div>
   </main>;
+}
+
+function Credit({ className = '' }: { className?: string }) {
+  return <p data-testid="text-credit" className={`text-xs text-muted-foreground ${className}`}>Made by <a href="https://github.com/siuu3p" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Dennis Dionisio</a></p>;
 }
 
 function Brand({ compact = false }: { compact?: boolean }) {
@@ -154,6 +159,7 @@ function Shell({ children, session }: { children: React.ReactNode; session: { id
         <div className="flex items-center gap-3"><span className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Service is live</span><div className="grid h-9 w-9 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground lg:hidden">{initials(session.fullName)}</div><Button className="hidden lg:inline-flex" variant="outline" size="sm" onClick={logoutNow} disabled={logout.isPending}><LogOut className="mr-2 h-4 w-4" />Sign out</Button></div>
       </header>
       <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-8 sm:py-9"><div className="mb-4 flex gap-1 overflow-x-auto pb-2 lg:hidden">{navItems.filter((item) => !item.admin || session.role === 'Admin').map(({ href, label, icon: Icon }) => <Link key={href} href={href} data-testid={`mobile-nav-${label.toLowerCase()}`} className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs ${window.location.pathname === href ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'}`}><Icon className="h-3.5 w-3.5" />{label}</Link>)}</div>{children}</main>
+      <footer className="mx-auto max-w-[1500px] px-4 pb-6 sm:px-8"><Credit /></footer>
     </div>
   </div>;
 }

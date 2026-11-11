@@ -60,6 +60,8 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   root: path.resolve(import.meta.dirname),
+  // Keep the libraries' license notices (MIT and similar require them in every copy).
+  esbuild: { legalComments: 'eof' },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
