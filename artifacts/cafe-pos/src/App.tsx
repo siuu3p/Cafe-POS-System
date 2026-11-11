@@ -119,8 +119,9 @@ function AuthScreen({ needsSetup }: { needsSetup: boolean }) {
   </main>;
 }
 
+// Café POS by Dennis Dionisio (GitHub: siuu3p). The visible credit shows the handle only.
 function Credit({ className = '' }: { className?: string }) {
-  return <p data-testid="text-credit" className={`text-xs text-muted-foreground ${className}`}>Made by <a href="https://github.com/siuu3p" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Dennis Dionisio</a></p>;
+  return <p data-testid="text-credit" className={`text-xs text-muted-foreground ${className}`}>Made by <a href="https://github.com/siuu3p" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">siuu3p</a></p>;
 }
 
 function Brand({ compact = false }: { compact?: boolean }) {
