@@ -6,8 +6,12 @@ A full-stack point-of-sale app for small cafés: staff checkout, customer loyalt
 
 > Built by Dennis Dionisio with AI assistance in Replit. I planned the features, directed the build, worked on it locally, and tested and deployed the app.
 
-<!-- Add 3-4 screenshots here: checkout screen, order history, catalog admin, dashboard -->
-<!-- ![Checkout screen](docs/screenshots/checkout.png) -->
+Screenshots use sample data (made-up products, customers, and orders).
+
+![Checkout: product grid and current order](docs/screenshots/checkout.jpg)
+![Orders: sales ledger with payment method and status](docs/screenshots/orders.jpg)
+![Catalog: products with category, price, and status](docs/screenshots/catalog.jpg)
+![Automation: order.completed webhook deliveries](docs/screenshots/automation.jpg)
 
 ## What it does
 
